@@ -18,7 +18,7 @@ app.use(cors({
     credentials: true,
   }));
 // routes middelware
-app.use('/api/user', authRoute);
+app.use('/user', authRoute);
 app.use('/posts', PostsRoute);
 
 
@@ -35,9 +35,9 @@ mongoose
 
 
 app.get('/' , (req, res) => {
-    res.send('first try')
+    res.send('no route defined')
 })
 
 
 // listening to port
-app.listen(3000);
+app.listen(8000);
