@@ -9,6 +9,8 @@ const {
   loginValidation,
 } = require("../validations/userValidation");
 
+const verify = require("./checkToken");
+
 router.post("/register", async (req, res) => {
   const error = registerValidation(req.body);
   if (error.error) return res.status(400).send(error.error.details);
@@ -43,7 +45,7 @@ router.post("/register", async (req, res) => {
       status: 200,
     });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).send({ data: { message: err } });
   }
 });
 router.post("/login", async (req, res) => {
@@ -102,7 +104,8 @@ router.post("/refresh", async (req, res) => {
   try {
     const oldRefreshToken = req.body.refreshToken;
     const verify = jwt.verify(oldRefreshToken, process.env.REFRESHTOKEN_SECRET);
-    if (!verify) return res.status(401).send({ message: "INVALID TOKEN." });
+    if (!verify)
+      return res.status(401).send({ data: { message: "INVALID TOKEN." } });
 
     const decoded = jwt.decode(oldRefreshToken);
     const user = await User.findOne({ _id: decoded._id });
@@ -128,12 +131,50 @@ router.post("/refresh", async (req, res) => {
         status: 200,
       });
     } else {
-      console.log(user.refreshToken === oldRefreshToken)
+      console.log(user.refreshToken === oldRefreshToken);
       res.status(400).send("error refreshtoken");
     }
   } catch (err) {
     console.log(err.message);
     res.status(400).send({ message: "Access denied " + err.message });
+  }
+});
+
+router.patch("/:userId", verify, async (req, res) => {
+  try {
+    const patchedUser = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      {
+        $set: {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          email: req.body.email,
+        },
+      }
+    );
+    const token = jwt.sign(
+      { _id: req.params.userId },
+      process.env.TOKEN_SECRET,
+      {
+        expiresIn: 86400,
+      }
+    );
+    const refreshToken = jwt.sign(
+      { _id: req.params.userId },
+      process.env.REFRESHTOKEN_SECRET,
+      {
+        expiresIn: 604800,
+      }
+    );
+
+   await User.updateOne({ _id: req.params.userId  }, { refreshToken });
+   const user = await User.findById(req.params.userId);
+    res.json({
+      data: { user: { user: user, token: { token, refreshToken } } },
+      status: 200,
+    });
+  } catch (err) {
+    res.status(400).send({ data: { message: err } });
   }
 });
 
