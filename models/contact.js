@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const PostSchema = mongoose.Schema({
+const ContactSchema = mongoose.Schema({
   message: {
     type: String,
   },
@@ -15,4 +15,4 @@ const PostSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Contact", PostSchema);
+module.exports = mongoose.model("Contact", ContactSchema);
