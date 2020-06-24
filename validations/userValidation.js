@@ -13,7 +13,7 @@ const registerValidation = (data) => {
         .required()
         .email(),
       password: Joi.string()
-        .min(8).pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/)
+        .min(6).pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,}$/)
         
     });
     return schema.validate(data);
